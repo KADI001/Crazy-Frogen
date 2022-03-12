@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class SideMovement : MonoBehaviour 
 {
-    public event Action<Vector3> PositionChange;
+    public event Action<Vector3> PositionChanged;
 
     [SerializeField] [Min(0f)] private float _speed;
 
@@ -35,8 +35,8 @@ public class SideMovement : MonoBehaviour
     public void MoveToRoad()
     {
         Vector3 roadPosition = new Vector3(Road, transform.position.y, transform.position.z);
-        Vector3 newPosition = Vector3.MoveTowards(transform.position, roadPosition, _speed);
+        Vector3 delta = Vector3.right * Vector3.MoveTowards(transform.position, roadPosition, _speed).x; 
 
-        PositionChange?.Invoke(newPosition);
+        PositionChanged?.Invoke(delta);
     }
 }

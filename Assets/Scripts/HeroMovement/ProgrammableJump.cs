@@ -4,16 +4,24 @@ using UnityEngine;
 
 public class ProgrammableJump : MonoBehaviour
 {
-    public event Action<Vector3> PositionChange;
+    public event Action<Vector3> PositionChanged;
 
     [SerializeField] private float _height;
     [SerializeField] private float _duration;
     [SerializeField] private AnimationCurve _trajectory;
 
-    public IEnumerator MoveByTime()
+    private Coroutine _jump;
+
+    public bool IsJumping => _jump != null;
+
+    public void JumpByTime()
+    {
+        _jump = StartCoroutine(MoveByTime());
+    }
+
+    private IEnumerator MoveByTime()
     {
         Vector3 startPosition = transform.position;
-        Vector3 newPosition = Vector3.zero;
         float expiredTime = 0;
         float progress = 0;
 
@@ -24,9 +32,15 @@ public class ProgrammableJump : MonoBehaviour
             expiredTime += Time.deltaTime;
             progress = expiredTime / _duration;
 
-            newPosition.y = startPosition.y + _trajectory.Evaluate(progress) * _height;
-
-            PositionChange?.Invoke(newPosition);
+            PositionChanged?.Invoke(Vector3.up * _trajectory.Evaluate(progress) * _height);
         }
-    }    
+
+        _jump = null;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (IsJumping)
+            StopCoroutine(_jump);
+    }
 }
