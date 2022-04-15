@@ -1,13 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(RunState), typeof(TurnState))]
-[RequireComponent(typeof(JumpState))]
+[RequireComponent(typeof(JumpState), typeof(PullState))]
 public class Movement : MonoBehaviour
 {
     [SerializeField] private InputKeyboard _inputKeyboard;
 
+    private PullState _pulling;
     private JumpState _jumping;
     private TurnState _turning;
     private RunState _runing;
@@ -17,10 +17,11 @@ public class Movement : MonoBehaviour
     private void Awake()
     {
         _inputKeyboard = GetComponent<InputKeyboard>();
-        _rigidbody = GetComponent<Rigidbody>();
+        _pulling = GetComponent<PullState>();
         _jumping = GetComponent<JumpState>();
         _turning = GetComponent<TurnState>();
         _runing = GetComponent<RunState>();
+        _rigidbody = GetComponent<Rigidbody>();
     }
 
     private void Start()
@@ -38,13 +39,15 @@ public class Movement : MonoBehaviour
 
     private void OnEnable()
     {
+        _pulling.DeltaChanged += OnDeltaYChanged;
         _jumping.DeltaChanged += OnDeltaYChanged;
         _turning.DeltaChanged += OnDeltaXChanged;
         _runing.DeltaChanged += OnDeltaZChanged;
     }
 
     private void OnDisable()
-    {   
+    {
+        _pulling.DeltaChanged -= OnDeltaYChanged;
         _jumping.DeltaChanged -= OnDeltaYChanged;
         _turning.DeltaChanged -= OnDeltaXChanged;
         _runing.DeltaChanged -= OnDeltaZChanged;
@@ -52,27 +55,27 @@ public class Movement : MonoBehaviour
 
     public void TurnToRight()
     {
-        _turning.Execute(TurnState.SwitchDirection.Right);
+        _turning.TurnTo(TurnState.SwitchDirection.Right);
     }
 
     public void TurnToLeft()
     {
-        _turning.Execute(TurnState.SwitchDirection.Left);
+        _turning.TurnTo(TurnState.SwitchDirection.Left);
     }
 
     private void OnDeltaYChanged(Vector3 delta)
     {
-        _delta.y = delta.y;
+        _delta.y += delta.y;
     }
 
     private void OnDeltaXChanged(Vector3 delta)
     {
-        _delta.x = delta.x;
+        _delta.x += delta.x;
     }
 
     private void OnDeltaZChanged(Vector3 delta)
     {
-        _delta.z = delta.z;
+        _delta.z += delta.z;
     }
 
     private void Move()

@@ -7,18 +7,6 @@ public class RunState : HeroState
 
     [SerializeField] private float _speed;
 
-    private float _deltaZ;
-
-    public float DeltaZ
-    {
-        get => _deltaZ;
-        private set
-        {
-            _deltaZ = value;
-            DeltaChanged?.Invoke(new Vector3(0, 0, _deltaZ));
-        }
-    }
-
     private void Update()
     {
         
@@ -26,6 +14,8 @@ public class RunState : HeroState
 
     public void MoveForwardWithoutAcceleration()
     {
-        DeltaZ = _speed * Time.deltaTime;
+        float deltaZ = _speed * Time.deltaTime;
+
+        DeltaChanged?.Invoke(new Vector3(0, 0, deltaZ));
     }
 }

@@ -10,19 +10,8 @@ public class TurnState : HeroState
     [SerializeField] private int _stepWidth;
 
     private Coroutine _executeCoroutine;
-    private int _roadLineIndex;
-    private int[] _roadLines = new int[3] { -1, 0, 1 };
-    private float _deltaX;
 
-    public float DeltaX 
-    {
-        get => _deltaX;
-        private set
-        {
-            _deltaX = value;
-            DeltaChanged?.Invoke(new Vector3(_deltaX, 0, 0));
-        }
-    }
+    private int _roadLineIndex;
     public int RoadLineIndex
     {
         get => _roadLineIndex;
@@ -35,7 +24,9 @@ public class TurnState : HeroState
         }
     }
 
+    private int[] _roadLines = new int[3] { -1, 0, 1 };
     public int RoadLine => _roadLines[_roadLineIndex] * _stepWidth;
+
     public bool OnCurrentRoad => RoadLine == transform.position.x;
 
     private void Update()
@@ -43,7 +34,7 @@ public class TurnState : HeroState
         
     }
 
-    public void Execute(SwitchDirection direction)
+    public void TurnTo(SwitchDirection direction)
     {
         if (_executeCoroutine != null)
         {
@@ -70,13 +61,17 @@ public class TurnState : HeroState
 
     private IEnumerator SmoothMoveToRoad(float deltaPerSecond)
     {
-        Vector3 target = new Vector3(RoadLine, transform.position.y, transform.position.z);
+        float deltaX = 0;
 
-        while (transform.position != target)
+        while (transform.position.x != RoadLine)
         {
             yield return new WaitForFixedUpdate();
 
-            DeltaX = transform.MoveTowardsWithDelta(transform.position, target, deltaPerSecond * Time.deltaTime).x;
+            Vector3 target = new Vector3(RoadLine, transform.position.y, transform.position.z);
+
+            deltaX = transform.MoveTowardsWithDelta(transform.position, target, deltaPerSecond * Time.deltaTime).x;
+
+            DeltaChanged?.Invoke(new Vector3(deltaX, 0, 0));
         }
 
         _executeCoroutine = null;
